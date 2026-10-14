@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DES Security Analyzer</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="hero">
+
+        <div class="hero-icon">🔐</div>
+
+        <div>
+            <h1>DES Security Analyzer</h1>
+
+            <p>
+                Implementation and Security Analysis of the
+                Data Encryption Standard
+            </p>
+        </div>
+
+    </header>
+
+
+    <!-- ================= INTRO ================= -->
+
+    <section class="intro-card">
+
+        <div>
+            <span class="badge">CRYPTOGRAPHY PROJECT</span>
+
+            <h2>Explore the DES Encryption Process</h2>
+
+            <p>
+                Encrypt and decrypt data, examine the 16 Feistel
+                rounds, and analyze how changing the DES key
+                affects the ciphertext.
+            </p>
+        </div>
+
+        <div class="des-info">
+
+            <div>
+                <strong>64-bit</strong>
+                <span>Block Size</span>
+            </div>
+
+            <div>
+                <strong>56-bit</strong>
+                <span>Effective Key</span>
+            </div>
+
+            <div>
+                <strong>16</strong>
+                <span>Rounds</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= ERROR ================= -->
+
+    {% if error %}
+
+    <div class="error">
+
+        <span class="status-icon">!</span>
+
+        <div>
+            <strong>Error</strong>
+            <p>{{ error }}</p>
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================= ENCRYPTION / DECRYPTION ================= -->
+
+    <div class="section-title">
+
+        <span>01</span>
+
+        <div>
+            <h2>Encryption & Decryption</h2>
+            <p>Work with 8-character text using DES.</p>
+        </div>
+
+    </div>
+
+
+    <div class="two-column">
+
+
+        <!-- TEXT ENCRYPTION -->
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <div class="card-icon encryption-icon">
+                    🔐
+                </div>
+
+                <div>
+                    <h2>Text Encryption</h2>
+
+                    <p>
+                        Convert plaintext into encrypted
+                        hexadecimal ciphertext.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <form action="/encrypt-text" method="POST">
+
+                <label for="plaintext">
+                    Plaintext
+                </label>
+
+                <input
+                    type="text"
+                    id="plaintext"
+                    name="plaintext"
+                    placeholder="Example: NETWORK"
+                    maxlength="8"
+                    required
+                >
+
+                <div class="input-hint">
+                    Maximum 8 characters
+                </div>
+
+
+                <label for="encrypt-key">
+                    DES Key
+                </label>
+
+                <input
+                    type="text"
+                    id="encrypt-key"
+                    name="key"
+                    placeholder="Example: SECURITY"
+                    maxlength="8"
+                    required
+                >
+
+                <div class="input-hint">
+                    Enter an 8-character key
+                </div>
+
+
+                <button type="submit">
+                    🔐 Encrypt Text
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- TEXT DECRYPTION -->
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <div class="card-icon decrypt-icon">
+                    🔓
+                </div>
+
+                <div>
+                    <h2>Text Decryption</h2>
+
+                    <p>
+                        Convert DES ciphertext back into
+                        the original plaintext.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <form action="/decrypt-text" method="POST">
+
+                <label for="ciphertext">
+                    Ciphertext
+                </label>
+
+                <input
+                    type="text"
+                    id="ciphertext"
+                    name="ciphertext"
+                    placeholder="Example: 64C676AEAF34EC54"
+                    maxlength="16"
+                    required
+                >
+
+                <div class="input-hint">
+                    16-character hexadecimal value
+                </div>
+
+
+                <label for="decrypt-key">
+                    DES Key
+                </label>
+
+                <input
+                    type="text"
+                    id="decrypt-key"
+                    name="key"
+                    placeholder="Example: SECURITY"
+                    maxlength="8"
+                    required
+                >
+
+                <div class="input-hint">
+                    Use the same key used during encryption
+                </div>
+
+
+                <button type="submit">
+                    🔓 Decrypt Text
+                </button>
+
+            </form>
+
+        </section>
+
+    </div>
+
+
+    <!-- ================= ENCRYPTION RESULT ================= -->
+
+    {% if ciphertext and not analysis %}
+
+    <section class="result-card success-card">
+
+        <div class="result-heading">
+
+            <span class="success-icon">✓</span>
+
+            <div>
+                <h2>Encryption Successful</h2>
+                <p>The plaintext has been encrypted using DES.</p>
+            </div>
+
+        </div>
+
+
+        <div class="result-grid">
+
+            {% if plaintext %}
+
+            <div class="result-item">
+
+                <span>Plaintext</span>
+
+                <strong>{{ plaintext }}</strong>
+
+            </div>
+
+            {% endif %}
+
+
+            {% if key %}
+
+            <div class="result-item">
+
+                <span>DES Key</span>
+
+                <strong>{{ key }}</strong>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="cipher-box">
+
+            <span>Generated Ciphertext</span>
+
+            <strong>{{ ciphertext }}</strong>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ================= DECRYPTION RESULT ================= -->
+
+    {% if decrypted_text %}
+
+    <section class="result-card success-card">
+
+        <div class="result-heading">
+
+            <span class="success-icon">✓</span>
+
+            <div>
+                <h2>Decryption Successful</h2>
+                <p>The ciphertext has been successfully decrypted.</p>
+            </div>
+
+        </div>
+
+
+        <div class="result-grid">
+
+            <div class="result-item">
+
+                <span>Ciphertext</span>
+
+                <strong class="mono">
+                    {{ ciphertext }}
+                </strong>
+
+            </div>
+
+
+            <div class="result-item">
+
+                <span>DES Key</span>
+
+                <strong>{{ key }}</strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="plain-result">
+
+            <span>Decrypted Text</span>
+
+            <strong>{{ decrypted_text }}</strong>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ================= STANDARD DES TEST ================= -->
+
+    <div class="section-title">
+
+        <span>02</span>
+
+        <div>
+            <h2>Standard DES Test</h2>
+
+            <p>
+                Verify the implementation using a standard
+                hexadecimal DES test vector.
+            </p>
+        </div>
+
+    </div>
+
+
+    <section class="card standard-test">
+
+        <div class="standard-info">
+
+            <div class="test-icon">
+                🧪
+            </div>
+
+            <div>
+
+                <h2>Hexadecimal DES Test</h2>
+
+                <p>
+                    Use 16 hexadecimal characters for both
+                    plaintext and key.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form action="/encrypt" method="POST">
+
+            <div class="two-inputs">
+
+                <div>
+
+                    <label for="hex-plaintext">
+                        Plaintext
+                    </label>
+
+                    <input
+                        type="text"
+                        id="hex-plaintext"
+                        name="plaintext"
+                        placeholder="0123456789ABCDEF"
+                        maxlength="16"
+                        required
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label for="hex-key">
+                        DES Key
+                    </label>
+
+                    <input
+                        type="text"
+                        id="hex-key"
+                        name="key"
+                        placeholder="133457799BBCDFF1"
+                        maxlength="16"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="standard-vector">
+
+                <span>Recommended test values</span>
+
+                <code>
+                    Plaintext: 0123456789ABCDEF
+                    &nbsp; | &nbsp;
+                    Key: 133457799BBCDFF1
+                </code>
+
+            </div>
+
+
+            <button type="submit">
+                🧪 Run DES Test
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ================= DES ROUND PROCESS ================= -->
+
+    {% if rounds %}
+
+    <div class="section-title">
+
+        <span>03</span>
+
+        <div>
+            <h2>DES Encryption Process</h2>
+
+            <p>
+                Visual representation of the 16 Feistel rounds.
+            </p>
+        </div>
+
+    </div>
+
+
+    <section class="process-card">
+
+        <div class="process-header">
+
+            <div>
+
+                <h2>🔄 16-Round Feistel Process</h2>
+
+                <p>
+                    The encrypted block passes through the
+                    following DES stages.
+                </p>
+
+            </div>
+
+            <span class="process-badge">
+                16 ROUNDS
+            </span>
+
+        </div>
+
+
+        <!-- Initial Permutation -->
+
+        <div class="stage completed">
+
+            <div class="stage-number">
+                ✓
+            </div>
+
+            <div>
+
+                <strong>Initial Permutation</strong>
+
+                <span>
+                    Completed
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- 16 Rounds -->
+
+        <div class="rounds-container">
+
+            {% for round in rounds %}
+
+            <div class="round-card">
+
+                <div class="round-number">
+                    {{ loop.index }}
+                </div>
+
+                <div class="round-content">
+
+                    <h3>
+                        Round {{ loop.index }}
+                    </h3>
+
+
+                    <div class="round-data">
+
+                        <div>
+
+                            <span>Left (L)</span>
+
+                            <code>
+                                {{ round.L }}
+                            </code>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Right (R)</span>
+
+                            <code>
+                                {{ round.R }}
+                            </code>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Round Key</span>
+
+                            <code>
+                                {{ round.round_key }}
+                            </code>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Final Permutation -->
+
+        <div class="stage completed">
+
+            <div class="stage-number">
+                ✓
+            </div>
+
+            <div>
+
+                <strong>Final Permutation</strong>
+
+                <span>
+                    Completed
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ================= SECURITY ANALYSIS ================= -->
+
+    <div class="section-title">
+
+        <span>04</span>
+
+        <div>
+
+            <h2>Security Analysis</h2>
+
+            <p>
+                Examine the avalanche effect caused by
+                changing the DES key.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <section class="security-card">
+
+
+        <div class="security-header">
+
+            <div class="security-icon">
+                🛡️
+            </div>
+
+            <div>
+
+                <h2>DES Avalanche Effect Analyzer</h2>
+
+                <p>
+                    Keep the plaintext constant and change
+                    the key slightly to observe the change
+                    in ciphertext.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form action="/security-analysis" method="POST">
+
+
+            <div class="analysis-grid">
+
+
+                <div>
+
+                    <label for="analysis-plaintext">
+                        Plaintext
+                    </label>
+
+                    <input
+                        type="text"
+                        id="analysis-plaintext"
+                        name="analysis_plaintext"
+                        placeholder="NETWORK"
+                        maxlength="8"
+                        required
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label for="original-key">
+                        Original Key
+                    </label>
+
+                    <input
+                        type="text"
+                        id="original-key"
+                        name="original_key"
+                        placeholder="SECURITY"
+                        maxlength="8"
+                        required
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label for="changed-key">
+                        Changed Key
+                    </label>
+
+                    <input
+                        type="text"
+                        id="changed-key"
+                        name="changed_key"
+                        placeholder="SECURITZ"
+                        maxlength="8"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="analysis-tip">
+
+                💡 <strong>Tip:</strong>
+                Change only one character in the key
+                to clearly demonstrate the avalanche effect.
+
+            </div>
+
+
+            <button type="submit">
+                🛡️ Analyze Security
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ================= SECURITY RESULT ================= -->
+
+    {% if analysis %}
+
+    <section class="analysis-result">
+
+
+        <div class="analysis-result-header">
+
+            <div class="security-icon">
+                📊
+            </div>
+
+            <div>
+
+                <h2>Security Analysis Result</h2>
+
+                <p>
+                    Comparison of ciphertexts produced
+                    using the two keys.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Input comparison -->
+
+        <div class="comparison-grid">
+
+            <div class="comparison-item">
+
+                <span>Plaintext</span>
+
+                <strong>
+                    {{ analysis.plaintext }}
+                </strong>
+
+            </div>
+
+
+            <div class="comparison-item">
+
+                <span>Original Key</span>
+
+                <strong>
+                    {{ analysis.original_key }}
+                </strong>
+
+            </div>
+
+
+            <div class="comparison-item">
+
+                <span>Changed Key</span>
+
+                <strong>
+                    {{ analysis.changed_key }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Ciphertext comparison -->
+
+        <div class="cipher-comparison">
+
+            <div class="cipher-panel">
+
+                <span>
+                    Original Ciphertext
+                </span>
+
+                <code>
+                    {{ analysis.ciphertext1 }}
+                </code>
+
+            </div>
+
+
+            <div class="arrow">
+                →
+            </div>
+
+
+            <div class="cipher-panel changed">
+
+                <span>
+                    Changed-Key Ciphertext
+                </span>
+
+                <code>
+                    {{ analysis.ciphertext2 }}
+                </code>
+
+            </div>
+
+        </div>
+
+
+        <!-- Avalanche -->
+
+        <div class="avalanche-section">
+
+            <div class="avalanche-title">
+
+                <div>
+
+                    <span>
+                        AVALANCHE EFFECT
+                    </span>
+
+                    <p>
+                        Changed ciphertext bits
+                    </p>
+
+                </div>
+
+
+                <strong>
+                    {{ analysis.avalanche_percentage }}%
+                </strong>
+
+            </div>
+
+
+            <div class="progress-container">
+
+                <div
+                    class="progress-bar"
+                    style="width: {{ analysis.avalanche_percentage }}%;">
+                </div>
+
+            </div>
+
+
+            <div class="bit-count">
+
+                <span>
+                    Changed Bits
+                </span>
+
+                <strong>
+                    {{ analysis.changed_bits }} /
+                    {{ analysis.total_bits }}
+                </strong>
+
+            </div>
+
+
+            <div class="avalanche-explanation">
+
+                The avalanche percentage represents the
+                proportion of ciphertext bits that changed
+                after modifying the DES key.
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ================= DES INFORMATION ================= -->
+
+    <section class="about-card">
+
+        <div class="about-icon">
+            🔐
+        </div>
+
+        <div>
+
+            <h2>About DES</h2>
+
+            <p>
+                The Data Encryption Standard (DES) is a
+                symmetric-key block cipher that processes
+                64-bit blocks using a 56-bit effective key
+                and 16 Feistel rounds.
+            </p>
+
+            <p>
+                DES is historically important in the study
+                of cryptography, but its 56-bit effective
+                key is no longer considered secure against
+                modern brute-force attacks.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <div class="footer-logo">
+            🔐 DES Security Analyzer
+        </div>
+
+        <p>
+            Educational Project • Data Encryption Standard
+        </p>
+
+        <span>
+            Python • Flask • Cryptography
+        </span>
+
+    </footer>
+
+
+</div>
+
+</body>
+
+</html>
